@@ -6,23 +6,22 @@
 
 --]]
 
-
-local Root, Utilities, Service, Package;
+local Root, Utilities, Service, Package
 local Settings = setmetatable({}, {
 	__index = function(self, ind)
 		return { __ROOT_PROXY = true, Path = "Settings", Index = ind }
-	end
+	end,
 })
 
 --// Output
 local Verbose = false
-local oWarn = warn;
+local oWarn = warn
 
 local function warn(...)
 	if Root and Root.Warn then
 		Root.Warn(...)
 	else
-		oWarn(":: ".. script.Name .." ::", ...)
+		oWarn(":: " .. script.Name .. " ::", ...)
 	end
 end
 
@@ -31,7 +30,6 @@ local function DebugWarn(...)
 		warn("Debug ::", ...)
 	end
 end
-
 
 local DeclareCommands = {
 	ViewCommands = {
@@ -49,64 +47,65 @@ local DeclareCommands = {
 
 			local function getCommandList()
 				local resultList = {}
-				for index,command in pairs(commands) do
+				for index, command in pairs(commands) do
 					if Root.Commands:PlayerCanRunCommand(plr, command) then
-						local mainText = (command.Prefix or '') .. command.Aliases[1]
-						local roleString = ''
-						local permString = ''
+						local mainText = (command.Prefix or "") .. command.Aliases[1]
+						local roleString = ""
+						local permString = ""
 						local subText = nil
 
 						if command.Arguments then
-							for i,arg in ipairs(command.Arguments) do
+							for i, arg in ipairs(command.Arguments) do
 								mainText = mainText .. Root.Settings.SplitChar .. "<" .. arg .. ">"
 							end
 						end
 
 						if command.Permissions then
-							for i,perm in ipairs(command.Permissions) do
-								permString = permString ..'; '.. perm
+							for i, perm in ipairs(command.Permissions) do
+								permString = permString .. "; " .. perm
 							end
 						end
 
 						if command.Roles then
-							for i,role in ipairs(command.Roles) do
-								roleString = roleString ..';'.. role
+							for i, role in ipairs(command.Roles) do
+								roleString = roleString .. ";" .. role
 							end
 						end
 
 						subText = [[
-							Example: ]].. mainText .."\n"..[[
-							Description: ]].. (command.Description or '') .."\n"..[[
-							Roles: ]].. roleString .."\n"..[[
-							Permissions: ]].. permString
+							Example: ]] .. mainText .. "\n" .. [[
+							Description: ]] .. (command.Description or "") .. "\n" .. [[
+							Roles: ]] .. roleString .. "\n" .. [[
+							Permissions: ]] .. permString
 
 						table.insert(resultList, {
 							Text = mainText,
-							Expanded = subText
+							Expanded = subText,
 						})
 					end
 				end
 				return resultList
 			end
 
-			local session = Root.Remote:NewSession({plr})
+			local session = Root.Remote:NewSession({ plr })
 			local sessionKey = session.SessionKey
-			local sessionEvent; sessionEvent = session:Connect(function(p, cmd, data)
+			local sessionEvent
+			sessionEvent = session:Connect(function(p, cmd, data)
 				warn("GOT DATA?", p, cmd, data)
 				if cmd == "Refresh" then
 					session:SendToUser(p, "Refresh", getCommandList())
 				end
 			end)
 
-			data:SendClientSide(sessionKey, getCommandList())
+			data:SendToClientSide(sessionKey, getCommandList())
 		end,
 		ClientSide = function(sessionKey, cmdData)
 			Root.UI:LoadModule({
-				Name = "List"
+				Name = "List",
 			}, {
 				Title = "Commands",
 				List = cmdData,
-				Refresh = sessionKey
+				Refresh = sessionKey,
 			})
 		end,
 	},
@@ -119,7 +118,7 @@ local DeclareCommands = {
 			testarg2 = function(data, cmdArg, text)
 				warn("PARSE ARG", data, cmdArg, text)
 				return text
-			end
+			end,
 		},
 		Description = "Test command",
 		Permissions = { "Player" },
@@ -133,7 +132,7 @@ local DeclareCommands = {
 				Player = plr,
 				Args = args,
 				Parsed = parsed,
-				Data = data
+				Data = data,
 			})
 
 			data:SendToClientSide(plr, args)
@@ -143,13 +142,13 @@ local DeclareCommands = {
 		ClientSide = function(...)
 			warn("Client Success!", ...)
 
-			Root.UI:NewElement("Window", {Theme = "Default"}, {
-				Title = "Test";
-			});
+			Root.UI:NewElement("Window", { Theme = "Default" }, {
+				Title = "Test",
+			})
 
 			return "WE GOT THIS FROM THE CLIENT!"
-		end
-	}
+		end,
+	},
 }
 
 return {
@@ -162,9 +161,9 @@ return {
 		for ind, data in pairs(DeclareCommands) do
 			Root.Commands:DeclareCommand(ind, data)
 		end
-	end;
+	end,
 
 	AfterInit = function(Root, Package)
 		--// Do after-init
-	end;
+	end,
 }
